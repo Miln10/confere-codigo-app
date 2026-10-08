@@ -56,9 +56,15 @@ class MainActivity : AppCompatActivity() {
 
         webView.addJavascriptInterface(NativeBridge(this), "AndroidNative")
 
-        if (savedInstanceState == null) {
-            webView.loadUrl("https://miln10.github.io/confere-o-codigo/")
-        }
+        // BUG corrigido (08/10/2026): a WebView é sempre recriada do zero aqui (nunca
+        // guardamos/restauramos o estado dela), mas o loadUrl só rodava quando
+        // savedInstanceState == null. Quando o Android mata o processo em segundo plano
+        // (comum, principalmente com pouca RAM) e o usuário reabre tocando no ícone, o
+        // sistema recria a Activity com savedInstanceState preenchido — a WebView nova
+        // ficava vazia pra sempre (tela em branco), porque o loadUrl nunca rodava nesse
+        // caso. Sempre carregar resolve: não há nada de útil pra restaurar de qualquer
+        // forma, então recarregar do zero é o comportamento certo nos dois casos.
+        webView.loadUrl("https://miln10.github.io/confere-o-codigo/")
     }
 
     override fun onBackPressed() {
